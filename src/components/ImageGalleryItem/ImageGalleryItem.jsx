@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 
-function ImageGalleryItem({ images }) {
+function ImageGalleryItem({ images, click }) {
   return (
     <Fragment>
       {images.map(img => {
@@ -10,6 +10,8 @@ function ImageGalleryItem({ images }) {
               src={img.webformatURL}
               alt=""
               className="ImageGalleryItem-image"
+              image={img.largeImageURL}
+              onClick={click}
             />
           </li>
         );

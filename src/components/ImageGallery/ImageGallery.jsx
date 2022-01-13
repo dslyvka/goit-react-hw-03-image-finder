@@ -1,10 +1,10 @@
 // import { Fragment } from 'react';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
 
-function ImageGallery({ images }) {
+function ImageGallery({ images, click }) {
   return (
     <ul className="gallery ImageGallery">
-      <ImageGalleryItem images={images}></ImageGalleryItem>
+      <ImageGalleryItem images={images} click={click}></ImageGalleryItem>
     </ul>
   );
 }
