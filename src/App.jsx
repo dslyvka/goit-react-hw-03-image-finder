@@ -5,6 +5,7 @@ import ImageGallery from './components/ImageGallery/ImageGallery';
 import Button from './components/Button/Button';
 import Loader from './components/Loader/Loader';
 import Modal from './components/Modal/Modal';
+import fetchImages from './services';
 
 class App extends Component {
   state = {
@@ -16,31 +17,25 @@ class App extends Component {
     image: '',
   };
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.esc);
-  }
+  // componentWillUnmount() {
+  //   window.removeEventListener('keydown', this.esc);
+  // }
 
-  handleSubmit = async (value, page = 1) => {
+  handleSubmit = (value, page = 1) => {
     if (page === 1) this.setState({ page: page });
-
-    const query = `https://pixabay.com/api/?q=${value}&page=${page}&key=24204810-4c4e56177cf5555097dc8a654&image_type=photo&orientation=horizontal&per_page=12`;
 
     this.setState({ value: value, skeleton: false });
 
-    // setTimeout(() => {
-    fetch(query)
-      .then(res => res.json())
-      .then(obj =>
-        this.setState(prevState => {
-          if (page === 1) {
-            window.scrollTo(0, 0);
+    fetchImages(value, page).then(obj =>
+      this.setState(prevState => {
+        if (page === 1) {
+          window.scrollTo(0, 0);
 
-            return { images: obj.hits, skeleton: true };
-          }
-          return { images: [...prevState.images, ...obj.hits], skeleton: true };
-        }),
-      );
-    // }, 2000)
+          return { images: obj.hits, skeleton: true };
+        }
+        return { images: [...prevState.images, ...obj.hits], skeleton: true };
+      }),
+    );
   };
 
   onLoadMoreClick = async () => {
@@ -52,7 +47,7 @@ class App extends Component {
   };
 
   toggleModal = e => {
-    window.addEventListener('keydown', this.esc);
+    // window.addEventListener('keydown', this.esc);
     if (e.currentTarget === e.target) {
       this.setState(prevState => {
         return {
@@ -60,12 +55,16 @@ class App extends Component {
         };
       });
     }
-    if (e.currentTarget.attributes.image) this.onImageClick(e);
+    if (e.currentTarget.id) {
+      this.onImageClick(e.currentTarget.id);
+    }
   };
 
-  onImageClick = image => {
-    const addImageToState = image.currentTarget.attributes.image.value;
-    this.setState({ image: addImageToState });
+  onImageClick = id => {
+    const addImageToState = this.state.images.find(img =>
+      parseInt(id) === img.id ? img.largeImageURL : 0,
+    );
+    this.setState({ image: addImageToState.largeImageURL });
   };
 
   esc = e => {
@@ -90,7 +89,7 @@ class App extends Component {
         {skeleton && images.length > 0 && (
           <Button onClick={this.onLoadMoreClick}></Button>
         )}
-        {modal && <Modal image={image} click={this.toggleModal}></Modal>}
+        {modal && <Modal image={image} click={this.toggleModal} esc={this.esc}></Modal>}
       </Fragment>
     );
   }
