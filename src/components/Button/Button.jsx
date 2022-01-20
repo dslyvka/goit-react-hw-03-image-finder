@@ -1,5 +1,5 @@
-function Button({onClick}) {
-    return <button type="button" className="Button" onClick={onClick}>Load more</button>
+function Button({onLoadMoreClick}) {
+    return <button type="button" className="Button" onClick={onLoadMoreClick}>Load more</button>
 }
 
 export default Button;

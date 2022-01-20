@@ -12,84 +12,73 @@ class App extends Component {
     images: [],
     page: 1,
     value: '',
-    skeleton: true,
-    modal: false,
-    image: '',
+    isLoading: false,
+    isModalOpen: false,
+    largeImageURL: '',
   };
 
   // componentWillUnmount() {
   //   window.removeEventListener('keydown', this.esc);
   // }
 
-  handleSubmit = (value, page = 1) => {
-    if (page === 1) this.setState({ page: page });
-
-    this.setState({ value: value, skeleton: false });
-
-    fetchImages(value, page).then(obj =>
-      this.setState(prevState => {
-        if (page === 1) {
-          window.scrollTo(0, 0);
-
-          return { images: obj.hits, skeleton: true };
-        }
-        return { images: [...prevState.images, ...obj.hits], skeleton: true };
-      }),
-    );
+  async componentDidUpdate(_, prevState) {
+    const { value, page } = this.state;
+    if (prevState.value !== value || prevState.page !== page) {
+      this.setState({ isLoading: true });
+      try {
+        const { hits } = await fetchImages(value, page);
+        this.setState(prevState => ({
+          images: [...prevState.images, ...hits],
+          isLoading: false,
+        }));
+      } catch (error) {
+        console.log(error);
+      }
+      if (page > 1) {
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
+    }
+  }
+  handleSubmit = value => {
+    this.setState({ value });
   };
 
   onLoadMoreClick = async () => {
-    await this.setState(prevState => {
+    this.setState(prevState => {
       return { page: prevState.page + 1 };
     });
-    const { page, value } = this.state;
-    this.handleSubmit(value, page);
   };
 
-  toggleModal = e => {
-    // window.addEventListener('keydown', this.esc);
-    if (e.currentTarget === e.target) {
-      this.setState(prevState => {
-        return {
-          modal: !prevState.modal,
-        };
-      });
-    }
-    if (e.currentTarget.id) {
-      this.onImageClick(e.currentTarget.id);
-    }
+  toggleModal = () => {
+    this.setState(prevState => ({ isModalOpen: !prevState.isModalOpen }));
   };
 
-  onImageClick = id => {
-    const addImageToState = this.state.images.find(img =>
-      parseInt(id) === img.id ? img.largeImageURL : 0,
-    );
-    this.setState({ image: addImageToState.largeImageURL });
-  };
-
-  esc = e => {
-    if (e.keyCode === 27) {
-      this.setState(prevState => {
-        return {
-          modal: !prevState.modal,
-        };
-      });
-    }
+  onImageClick = largeImageURL => {
+    this.setState({ largeImageURL });
+    this.toggleModal();
   };
 
   render() {
-    const { images, skeleton, modal, image } = this.state;
+    const { images, isLoading, isModalOpen, largeImageURL } = this.state;
     return (
       <Fragment>
         <Searchbar onSubmit={this.handleSubmit}></Searchbar>
-        {!skeleton && <Loader></Loader>}
-        {skeleton && (
-          <ImageGallery images={images} click={this.toggleModal}></ImageGallery>
+        {images.length > 0 && (
+          <ImageGallery
+            images={images}
+            onImageClick={this.onImageClick}
+          ></ImageGallery>
         )}
-        {skeleton && images.length > 0 && (
-          <Button onClick={this.onLoadMoreClick}></Button>
+        {isLoading && <Loader></Loader>}
+        {!isLoading && images.length > 0 && (
+          <Button onLoadMoreClick={this.onLoadMoreClick}></Button>
         )}
-        {modal && <Modal image={image} click={this.toggleModal} esc={this.esc}></Modal>}
+        {isModalOpen && (
+          <Modal image={largeImageURL} onClose={this.toggleModal}></Modal>
+        )}
       </Fragment>
     );
   }

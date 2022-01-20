@@ -1,19 +1,20 @@
 import { Fragment } from 'react';
 
-function ImageGalleryItem({ images, click, id }) {
-  const { webformatURL, largeImageURL } = images;
+function ImageGalleryItem({ image, onImageClick, id }) {
+  const { webformatURL, largeImageURL, tags } = image;
   return (
     <Fragment>
-    <li className="gallery-item ImageGalleryItem" >
-      <img
-        src={webformatURL}
-        alt=""
-        className="ImageGalleryItem-image"
-        image={largeImageURL}
-          onClick={click}
+      <li className="gallery-item ImageGalleryItem">
+        <img
+          src={webformatURL}
+          alt={tags}
+          className="ImageGalleryItem-image"
+          onClick={() => {
+            onImageClick(largeImageURL);
+          }}
           id={id}
-      />
-    </li>
+        />
+      </li>
     </Fragment>
   );
 }

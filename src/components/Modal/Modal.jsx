@@ -6,10 +6,16 @@ class Modal extends Component {
   }
   componentWillUnmount() {
     window.removeEventListener('keydown', this.props.esc);
+
+  }
+  esc = e => {
+    if (e.keyCode === 27) {
+      this.props.onClose()
+    }
   }
   render() {
     return (
-      <div className="Overlay" onClick={this.props.click}>
+      <div className="Overlay" onClick={this.props.onClose}>
         <div className="Modal">
           <img src={this.props.image} alt="" />
         </div>
